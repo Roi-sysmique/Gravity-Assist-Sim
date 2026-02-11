@@ -6,7 +6,7 @@ import math
 pygame.init()
 
 HEIGHT, WIDTH = 600, 800
-SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
+SCREEN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SRCALPHA)
 pygame.display.set_caption("Gravity Assist Sim")
 clock = pygame.time.Clock()
 gravity_constant = 0.01
@@ -69,13 +69,23 @@ class Spaceship(Entity):
 
     def movement(self, keys):
         if keys[pygame.K_SPACE] and self.fuel > 0:
-            self.fuel -= 10
-            self.velocity += Vector2(1*math.cos(math.radians(self.angle)), 1*math.sin(math.radians(self.angle)))
+            self.fuel -= 5
+            self.velocity += Vector2(0.5*math.cos(math.radians(self.angle)), 0.5*math.sin(math.radians(self.angle)))
         if keys[pygame.K_RIGHT]:
             self.angle += 10
             print(self.angle)
         elif keys[pygame.K_LEFT]:
             self.angle -= 10
+            print(self.angle)
+
+    def draw(self, surface):
+        super().draw(surface)
+        pygame.draw.rect(surface, (0, 0, 0, 255), (10, 10, 200, 25), border_radius=5)
+        pygame.draw.rect(surface, (255, 0, 0, 255), (10, 10, self.fuel*2, 25), border_radius=5)
+        
+    def update(self, entities):
+        self.movement(keys=pygame.key.get_pressed())
+        super().update(entities)
 
 def main():
     fps = 60
@@ -98,8 +108,6 @@ def main():
         for entity in entities:
             entity.draw(SCREEN)
             entity.update(entities)
-            if entity == spaceship:
-                entity.movement(pygame.key.get_pressed())
         pygame.display.update()
         clock.tick(fps)
 
