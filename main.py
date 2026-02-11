@@ -1,6 +1,7 @@
 import pygame
 import sys
 from pygame import Vector2
+import math
 
 pygame.init()
 
@@ -10,9 +11,8 @@ pygame.display.set_caption("Gravity Assist Sim")
 clock = pygame.time.Clock()
 gravity_constant = 0.01
 
-class Entity(pygame.sprite.Sprite):
+class Entity:
     def __init__(self, position:Vector2, mass:float, velocity:Vector2, acceleration:Vector2, radius:int, color:tuple):
-        pygame.sprite.Sprite.__init__(self)
         self.mass = mass
         self.position = position
         self.velocity = velocity
@@ -61,15 +61,33 @@ class Entity(pygame.sprite.Sprite):
         self.rect.center = self.position
         self.gravity(entities)
 
+class Spaceship(Entity):
+    def __init__(self, position:Vector2, mass:float, velocity:Vector2, acceleration:Vector2, radius:int, color:tuple):
+        super().__init__(position, mass, velocity, acceleration, radius, color)
+        self.fuel = 100
+        self.angle = 0
+
+    def movement(self, keys):
+        if keys[pygame.K_SPACE] and self.fuel > 0:
+            self.fuel -= 10
+            self.velocity += Vector2(1*math.cos(math.radians(self.angle)), 1*math.sin(math.radians(self.angle)))
+        if keys[pygame.K_RIGHT]:
+            self.angle += 10
+            print(self.angle)
+        elif keys[pygame.K_LEFT]:
+            self.angle -= 10
+
 def main():
     fps = 60
     entities = []
     entity = Entity(Vector2(WIDTH/2, HEIGHT / 2), 10000, Vector2(0, 0), Vector2(0, 0),20, (255,255,0))
-    entities.append(entity)
+    #entities.append(entity)
 
     entity_2 = Entity(Vector2(WIDTH / 4, HEIGHT / 2), 10, Vector2(0, 1), Vector2(0, 0),20, (0,255,0))
-    entities.append(entity_2)
+    #entities.append(entity_2)
 
+    spaceship = Spaceship(Vector2(WIDTH / 2, HEIGHT / 2), 10, Vector2(0, 0), Vector2(0, 0),20, (0,255,0))
+    entities.append(spaceship)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -80,6 +98,8 @@ def main():
         for entity in entities:
             entity.draw(SCREEN)
             entity.update(entities)
+            if entity == spaceship:
+                entity.movement(pygame.key.get_pressed())
         pygame.display.update()
         clock.tick(fps)
 
