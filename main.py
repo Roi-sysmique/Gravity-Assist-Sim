@@ -8,10 +8,10 @@ HEIGHT, WIDTH = 600, 800
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Gravity Assist Sim")
 clock = pygame.time.Clock()
-gravity_constant = 0.1
+gravity_constant = 0.01
 
 class Entity(pygame.sprite.Sprite):
-    def __init__(self, position:Vector2, mass:int, velocity:Vector2, acceleration:Vector2, radius:int, color:tuple):
+    def __init__(self, position:Vector2, mass:float, velocity:Vector2, acceleration:Vector2, radius:int, color:tuple):
         pygame.sprite.Sprite.__init__(self)
         self.mass = mass
         self.position = position
@@ -64,14 +64,12 @@ class Entity(pygame.sprite.Sprite):
 def main():
     fps = 60
     entities = []
-    entity = Entity(Vector2(WIDTH / 2, HEIGHT / 2), 50, Vector2(1, 1), Vector2(0, 0),20, (255,255,0))
+    entity = Entity(Vector2(WIDTH/2, HEIGHT / 2), 10000, Vector2(0, 0), Vector2(0, 0),20, (255,255,0))
     entities.append(entity)
 
-    entity_2 = Entity(Vector2(WIDTH / 3, HEIGHT / 2), 100, Vector2(0, 0), Vector2(0, 0),20, (0,255,0))
+    entity_2 = Entity(Vector2(WIDTH / 4, HEIGHT / 2), 10, Vector2(0, 1), Vector2(0, 0),20, (0,255,0))
     entities.append(entity_2)
 
-    entity_3 = Entity(Vector2((WIDTH * 3) / 4, HEIGHT / 2), 200, Vector2(0, 0), Vector2(0, 0),40, (255,0,0))
-    entities.append(entity_3)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
