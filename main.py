@@ -9,10 +9,12 @@ HEIGHT, WIDTH = 600, 800
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SRCALPHA)
 pygame.display.set_caption("Gravity Assist Sim")
 clock = pygame.time.Clock()
-gravity_constant = 0.01
+gravity_constant = 5
+font = pygame.font.SysFont("Arial", 30)
 
 class Entity:
-    def __init__(self, position:Vector2, mass:float, velocity:Vector2, acceleration:Vector2, radius:int, color:tuple):
+    def __init__(self, position:Vector2, mass:float, velocity:Vector2, acceleration:Vector2, radius:int, color:tuple,
+                 mobile:bool):
         self.mass = mass
         self.position = position
         self.velocity = velocity
@@ -24,6 +26,7 @@ class Entity:
         self.image.set_colorkey('white')
         self.rect = self.image.get_rect(center=self.position)
         self.color = color
+        self.mobile = mobile
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
@@ -59,44 +62,55 @@ class Entity:
         self.velocity += self.acceleration
         self.position += self.velocity
         self.rect.center = self.position
-        self.gravity(entities)
+        if self.mobile:
+            self.gravity(entities)
 
 class Spaceship(Entity):
     def __init__(self, position:Vector2, mass:float, velocity:Vector2, acceleration:Vector2, radius:int, color:tuple):
-        super().__init__(position, mass, velocity, acceleration, radius, color)
-        self.fuel = 100
+        super().__init__(position, mass, velocity, acceleration, radius, color, True)
+        self.fuel = 200
         self.angle = 0
+        self.color = (40, 40, 40)
 
     def movement(self, keys):
         if keys[pygame.K_SPACE] and self.fuel > 0:
             self.fuel -= 5
-            self.velocity += Vector2(0.5*math.cos(math.radians(self.angle)), 0.5*math.sin(math.radians(self.angle)))
+            self.velocity += Vector2(0.2*math.cos(math.radians(self.angle- 90)), 0.2*math.sin(math.radians(self.angle-90)))
         if keys[pygame.K_RIGHT]:
             self.angle += 10
-            print(self.angle)
         elif keys[pygame.K_LEFT]:
             self.angle -= 10
-            print(self.angle)
 
     def draw(self, surface):
-        super().draw(surface)
+        speed_txt  = font.render("Vitesse: " + str(round(self.velocity.length(), 2)), True, (255, 255, 255))
+        speed_rect = speed_txt.get_rect(topleft=(10, 40))
         pygame.draw.rect(surface, (0, 0, 0, 255), (10, 10, 200, 25), border_radius=5)
-        pygame.draw.rect(surface, (255, 0, 0, 255), (10, 10, self.fuel*2, 25), border_radius=5)
-        
+        pygame.draw.rect(surface, (255, 0, 0, 255), (10, 10, self.fuel, 25), border_radius=5)
+        surface.blit(self.image, self.rect)
+        surface.blit(speed_txt, speed_rect)
+
     def update(self, entities):
-        self.movement(keys=pygame.key.get_pressed())
+        self.movement(pygame.key.get_pressed())
+
+        canva = pygame.Surface((self.diameter, self.diameter), pygame.SRCALPHA)
+        pygame.draw.polygon(canva, self.color,
+                            ((self.radius, 0),
+                             (0, self.diameter),
+                             (self.radius, self.diameter - 10),
+                             (self.diameter, self.diameter)))
+        self.image = pygame.transform.rotozoom(canva, -self.angle, 1)
+        self.rect = self.image.get_rect(center=self.position)
+
         super().update(entities)
+
 
 def main():
     fps = 60
     entities = []
-    entity = Entity(Vector2(WIDTH/2, HEIGHT / 2), 10000, Vector2(0, 0), Vector2(0, 0),20, (255,255,0))
-    #entities.append(entity)
+    entity = Entity(Vector2(WIDTH/2, HEIGHT / 2), 100, Vector2(0, 0), Vector2(0, 0),50, (255,255,0), False)
+    entities.append(entity)
 
-    entity_2 = Entity(Vector2(WIDTH / 4, HEIGHT / 2), 10, Vector2(0, 1), Vector2(0, 0),20, (0,255,0))
-    #entities.append(entity_2)
-
-    spaceship = Spaceship(Vector2(WIDTH / 2, HEIGHT / 2), 10, Vector2(0, 0), Vector2(0, 0),20, (0,255,0))
+    spaceship = Spaceship(Vector2(WIDTH * 3 / 2, HEIGHT / 2), 5, Vector2(0, 0), Vector2(0, 0),20, (0,255,0))
     entities.append(spaceship)
     while True:
         for event in pygame.event.get():
@@ -106,8 +120,8 @@ def main():
 
         SCREEN.fill('light blue')
         for entity in entities:
-            entity.draw(SCREEN)
             entity.update(entities)
+            entity.draw(SCREEN)
         pygame.display.update()
         clock.tick(fps)
 
