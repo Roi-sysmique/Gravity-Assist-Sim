@@ -9,7 +9,7 @@ HEIGHT, WIDTH = 600, 800
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE, pygame.SRCALPHA)
 pygame.display.set_caption("Gravity Assist Sim")
 clock = pygame.time.Clock()
-gravity_constant = 5
+gravity_constant = 10
 font = pygame.font.SysFont("Arial", 30)
 
 class Entity:
@@ -52,7 +52,7 @@ class Entity:
                 self.velocity += impulse
                 entity.velocity -= impulse
             else:
-                force = int(self.mass * entity.mass * gravity_constant) / distance**2
+                force = (self.mass * entity.mass * gravity_constant) / (distance ** 2)
                 force_vec = distance_vec.normalize() * force
                 self.velocity += force_vec
 
@@ -118,7 +118,7 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-        SCREEN.fill('light blue')
+        SCREEN.fill((10, 10, 30))
         for entity in entities:
             entity.update(entities)
             entity.draw(SCREEN)
